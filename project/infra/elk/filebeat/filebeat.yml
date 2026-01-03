@@ -10,21 +10,44 @@ filebeat.inputs:
           target: ""
           message_key: "log"
 
-    processors:
-      - decode_json_fields:
-          fields: ["message"]
-          target: ""
-          overwrite_keys: true
-          add_error_key: true
+processors:
+  - add_docker_metadata: ~
 
-      - rename:
-          fields:
-            - from: "event"
-              to: "pino.event"
-          ignore_missing: true
-          fail_on_error: false
+  # enlever le \n final de "message"
+  - script:
+      lang: javascript
+      id: trim_message
+      source: >
+        function process(event) {
+          var m = event.Get("message");
+          if (m && typeof m === "string") {
+            event.Put("message", m.replace(/\n$/, ""));
+          }
+        }
 
-      - add_docker_metadata: ~
+  # Décode JSON UNIQUEMENT pour certains containers
+  # + UNIQUEMENT si message commence par "{"
+  - decode_json_fields:
+      when:
+        and:
+          - regexp:
+              message: '^\s*\{'
+          - or:
+              - equals:
+                  container.name: "auth-service"
+              - equals:
+                  container.name: "game-service"
+              - equals:
+                  container.name: "APIBC"
+              - equals:
+                  container.name: "APIBDD"
+              # Optionnel : si tu veux aussi parser elastic/logstash/kibana en JSON (souvent inutile)
+              # - equals: { container.name: "logstash" }
+              # - equals: { container.name: "filebeat" }
+      fields: ["message"]
+      target: ""
+      overwrite_keys: true
+      add_error_key: true
 
 output.logstash:
   hosts: ["logstash:5044"]

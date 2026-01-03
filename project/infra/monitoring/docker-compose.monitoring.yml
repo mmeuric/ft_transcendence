@@ -2,6 +2,7 @@
 #   docker compose -f docker-compose.yml -f infra/monitoring/docker-compose.monitoring.yml up -d
 
 services:
+
   prometheus:
     image: prom/prometheus:v2.55.0
     container_name: prometheus
@@ -28,15 +29,16 @@ services:
       - default
 
   alertmanager:
-    image: prom/alertmanager:v0.27.0
+    build:
+      context: ./infra/monitoring/alertmanager
     container_name: alertmanager
     restart: unless-stopped
-    command: ["--config.file=/etc/alertmanager/alertmanager.yml", "--storage.path=/alertmanager"]
+    env_file:
+      - ./.env
     ports:
       - "9093:9093"
     volumes:
       - alertmanager_data:/alertmanager
-      - ./infra/monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     networks:
       - default
 
@@ -80,13 +82,19 @@ services:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
     restart: unless-stopped
+    privileged: true
     ports:
       - "8080:8080"
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
+      - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=10s
+
 
   blackbox:
     image: prom/blackbox-exporter:v0.25.0
@@ -101,3 +109,4 @@ volumes:
   prometheus_data:
   grafana_data:
   alertmanager_data:
+  alertmanager_cfg:

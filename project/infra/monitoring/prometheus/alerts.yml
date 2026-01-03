@@ -1,3 +1,11 @@
+# Test AuthServiceHighCPU
+# CORES=6
+#DURATION=60
+#docker exec -d auth-service sh -c "
+#for i in \$(seq 1 $CORES); do yes > /dev/null & done
+#sleep $DURATION
+#pkill yes"
+
 groups:
   - name: basic-health
     rules:
@@ -29,22 +37,42 @@ groups:
           description: "RAM > 90% for 10m."
 
       - alert: ContainerRestarts
-        expr: rate(container_last_seen[5m]) == 0
-        for: 5m
+        expr: increase(container_start_time_seconds[10m]) > 0
+        for: 0m
         labels:
           severity: warning
         annotations:
-          summary: "Container may have restarted or disappeared"
-          description: "Container not seen in last 5m via cAdvisor."
-
-  - name: http
-    rules:
-      - alert: HighHTTPErrorRate
-        expr: |
-          (sum(rate(probe_http_status_code{job="blackbox_http"}[5m]) * on(instance) group_left() (probe_success == 0)) > 0)
+          summary: "Container restarted"
+          description: "A container restart was detected in the last 10 minutes."
+      
+      - alert: BlackboxProbeFailed
+        expr: probe_success{job="blackbox_http"} == 0
         for: 2m
         labels:
           severity: critical
         annotations:
           summary: "HTTP probe failed for {{ $labels.instance }}"
           description: "Blackbox probe failing for 2+ minutes."
+
+      - alert: ManualTestAlert
+        expr: vector(1)
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Test alert"
+          description: "This is a manual test to validate Alertmanager → Slack."
+      
+      - alert: AuthServiceHighCPU
+        expr: sum(rate(container_cpu_usage_seconds_total{cpu="total", id!="/", container_label_com_docker_compose_service="auth-service"}[1m])) > 0.8
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "auth-service CPU > 0.8 cores"
+          description: "auth-service uses more than 80% of one CPU core for 30 seconds."
+
+
+
+
+
