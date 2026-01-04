@@ -1,4 +1,8 @@
 # ft_transcendence
+👉 View more about DevOps & Infra here: INFRA_DEVOPS.md  
+[Infrastructure & DevOps documentation](INFRA_DEVOPS.md)
+
+<br>
 
 `ft_transcendence` is the final project of **42’s Common Core**: a full-stack web application built as a **team of 4**, designed to be production-like (multi-user, secure, containerized, and runnable with a single command).
 
@@ -152,3 +156,11 @@ The full stack should start with a single command (frontend, backend services, d
 ## Notes
 
 * Secrets/credentials are managed via environment variables (`.env`) and not committed.
+
+---
+
+## Grade
+![Grade](./images/grade_120.png)
+
+
+
