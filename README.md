@@ -159,7 +159,7 @@ The full stack should start with a single command (frontend, backend services, d
 
 ---
 
-## Grade
+## Grade 120/100 - 42 school 
 ![Grade](./images/grade_120.png)
 
 
