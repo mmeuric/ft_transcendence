@@ -74,7 +74,6 @@ I was responsible for the **platform & operations layer**, focusing on **reliabi
 * **Fastify + Node.js** backend (TypeScript)
 * Backend structured as **microservices**
 * **SQLite** database service
-* **API Gateway** to expose services
 
 ### Frontend
 
@@ -159,7 +158,7 @@ The full stack should start with a single command (frontend, backend services, d
 
 ---
 
-## Grade 120/100 - 42 school 
+## Final grade - 42 school 
 ![Grade](./images/grade_120.png)
 
 
